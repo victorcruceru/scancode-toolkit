@@ -11,35 +11,25 @@ set -e
 # un-comment to trace execution
 set -x
 
-echo "###  BUILDING ScanCode release ###"
 
-echo "  RELEASE: Cleaning previous release archives, then setup and config: "
-rm -rf dist/ build/
-
-# backup dev manifests
-cp MANIFEST.in MANIFEST.in.dev 
-
-# install release manifests
-cp etc/release/MANIFEST.in.release MANIFEST.in
-
-./configure --clean
-export CONFIGURE_QUIET=1
-./configure etc/conf
-
-echo "  RELEASE: Building release archives..."
-
-# build a zip and tar.bz2
-bin/python setup.py --quiet --use-default-version clean --all sdist --formats=bztar,zip bdist_wheel
-
-# restore dev manifests
-mv MANIFEST.in.dev MANIFEST.in
+function build_distribution {
+    platform=$1
+    dist_dir=dist/$platform
+    mkdir -p $dist_dir
+    echo "Building for: $platform"
+    # install release manifest for this platform
+    cp etc/release/MANIFEST.in.release-$platform MANIFEST.in
+    # build proper
+    bin/python setup.py --quiet --use-default-version clean --all sdist --formats=bztar,zip --dist-dir=$dist_dir
+}
 
 
-function test_scan {
+function run_test_scan {
     # run a test scan for a given archive
-    file_extension=$1
-    extract_command=$2
-    for archive in *.$file_extension;
+    platform=$1
+    file_extension=$2
+    extract_command=$3
+    for archive in $platform/*.$file_extension;
         do
             echo "    RELEASE: Testing release archive: $archive ... "
             $($extract_command $archive)
@@ -87,11 +77,48 @@ function test_scan {
         done
 }
 
+
+################################################################################
+echo "###  BUILDING ScanCode release ###"
+
+echo "  RELEASE: Cleaning previous release archives, then setup and config: "
+rm -rf dist/ build/
+
+# backup dev manifest
+cp MANIFEST.in MANIFEST.in.dev 
+
+#./configure --clean
+export CONFIGURE_QUIET=1
+#./configure etc/conf
+
+echo "  RELEASE: Building release archives..."
+##############################################
+
+PLATFORMS="python2-linux-64 python2-macos"
+#python2-windows-32 python2-windows-64
+#python3-linux-64 python3-macos python3-windows-32 python3-windows-64 everything"
+
+
+for plat in $PLATFORMS;
+do
+    build_distribution $plat
+done
+
+
+echo "  RELEASE: Building release wheel..."
+##############################################
+bin/python setup.py --quiet --use-default-version clean --all bdist_wheel
+    
+# restore dev manifests
+mv MANIFEST.in.dev MANIFEST.in
+
+
+##############################################
 cd dist
 if [ "$1" != "--no-tests" ]; then
     echo "  RELEASE: Testing..."
-    test_scan bz2 "tar -xf"
-    test_scan zip "unzip -q"
+    run_test_scan python2-linux-64 bz2 "tar -xf"
+    run_test_scan python2-linux-64 zip "unzip -q"
 else
     echo "  RELEASE: !!!!NOT Testing..."
 fi
