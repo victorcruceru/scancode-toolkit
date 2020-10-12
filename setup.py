@@ -192,6 +192,8 @@ setup(
         'gemfileparser >= 0.7.0',
         'pkginfo >= 1.5.0.1',
         'dparse2',
+        'oelint_parser',
+        'oelint_adv',
 
         # used to fix mojibake in Windows PE
         # for now we use the evrsion that works on both Python 2 and 3

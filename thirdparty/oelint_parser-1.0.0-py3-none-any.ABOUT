@@ -1,0 +1,13 @@
+about_resource: oelint_parser-1.0.0-py3-none-any.whl
+name: oelint_parser-1.0.0-py3-none-any.whl
+version: 1.0.0
+
+copyright: Copyright (c) 2020, Konrad Weihmann
+license_expression: bsd-simplified
+license_file: bsd-simplified.LICENSE
+
+homepage_url: https://github.com/priv-kweihmann/oelint-parser
+
+name: normality
+owner: Konrad Weihmann
+
