@@ -103,17 +103,17 @@ def build_package(package_dict):
     Return a Package built from `package_dict` obtained from the .bb files.
     """
     # Initialization
-    name = ''
-    version = ''
-    description = ''
-    homepage_url = ''
-    download_url = ''
-    sha1 = ''
-    md5 = ''
-    sha256 = ''
-    sha512 = ''
-    declared_license = ''
-    dependencies = ''
+    name = None
+    version = None
+    description = None
+    homepage_url = None
+    download_url = None
+    sha1 = None
+    md5 = None
+    sha256 = None
+    sha512 = None
+    declared_license = None
+    dependencies = None
     if 'PN' in package_dict:
         name = package_dict['PN']
     if 'PV' in package_dict:
