@@ -26,9 +26,10 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import logging
 
 import attr
+import logging
+import os
 
 from commoncode import filetype
 from packagedcode import models
@@ -79,11 +80,26 @@ def parse(location):
 
     # get all variables of the name PV from all files
     package_dict = {}
+    bb_basename = os.path.basename(location).rpartition('.bb')[0]
+    # The bb filename is fomatted as <package_name>_<package_version>.bb
+    # Therefore, we can get the name and version by splitting the filename
+    name_version = bb_basename.split('_')
+    # Check if the length of the name_version list only has 2 elements
+    if len(name_version) == 2:
+        package_dict['name'] = name_version[0]
+        package_dict['version'] = name_version[1]
+    # Otherwise, there may be '_' in the version value
+    else:
+        package_dict['name'] = bb_basename.partition('_')[0]
+        package_dict['version'] = bb_basename.partition('_')[2]
+
     for item in _stash.GetItemsFor():
         try:
-            # Create a package dictionary with VarName as the key and
+            # Create a package dictionary with RawVarName as the key and
             # VarValueStripped as the value
-            name = item.VarName
+            # Note that not every item line has RawVarName field, and that's
+            # the reason we need to use try/except clause 
+            name = item.RawVarName
             value = item.VarValueStripped
             try:
                 if package_dict[name]:
@@ -103,8 +119,6 @@ def build_package(package_dict):
     Return a Package built from `package_dict` obtained from the .bb files.
     """
     # Initialization
-    name = None
-    version = None
     description = None
     homepage_url = None
     download_url = None
@@ -114,20 +128,14 @@ def build_package(package_dict):
     sha512 = None
     declared_license = None
     dependencies = None
-    if 'PN' in package_dict:
-        name = package_dict['PN']
-    if 'PV' in package_dict:
-        version = package_dict['PV']
+    name = package_dict['name']
+    version = package_dict['version']
     if 'DESCRIPTION' in package_dict:
         description = package_dict['DESCRIPTION']
     if 'HOMEPAGE' in package_dict:
         homepage_url = package_dict['HOMEPAGE']
     if 'PREMIRRORS' in package_dict:
         download_url = package_dict['PREMIRRORS']
-    #The item.VarName for SRC_URI[*] from the parser are SRC_URI
-    #Therefore, I cannot differentiate md5,sha1, or src file location reference
-    # Entered an issue ticket: https://github.com/priv-kweihmann/oelint-parser/issues/3
-    """
     if 'SRC_URI[sha1sum]' in package_dict:
         sha1 = package_dict['SRC_URI[sha1sum]']
     if 'SRC_URI[md5sum]' in package_dict:
@@ -136,7 +144,6 @@ def build_package(package_dict):
         sha256 = package_dict['SRC_URI[sha256sum]']
     if 'SRC_URI[sha512sum]' in package_dict:
         sha512 = package_dict['SRC_URI[sha512sum]']
-    """
     if 'LICENSE' in package_dict:
         declared_license = package_dict['LICENSE']
     if 'DEPENDS' in package_dict:

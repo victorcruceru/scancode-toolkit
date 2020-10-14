@@ -1,8 +1,8 @@
 {
   "type": "bitbake",
   "namespace": null,
-  "name": null,
-  "version": null,
+  "name": "initramfs-live-install-testfs",
+  "version": "1.0",
   "qualifiers": {},
   "subpath": null,
   "primary_language": null,
@@ -28,7 +28,7 @@
   "dependencies": "grub parted e2fsprogs-mke2fs",
   "contains_source_code": null,
   "source_packages": [],
-  "purl": null,
+  "purl": "pkg:bitbake/initramfs-live-install-testfs@1.0",
   "repository_homepage_url": null,
   "repository_download_url": null,
   "api_data_url": null
